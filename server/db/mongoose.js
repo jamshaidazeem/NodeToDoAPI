@@ -9,6 +9,13 @@ const connectOptions = {
     useNewUrlParser: true,
 };
 
+mongoose.connect(kMongoDBURL, connectOptions, (err) => {
+    if (err) {
+        return console.log('unable to connect to database, ', err.message);
+    }
+    console.log("connected to database successfully!");
+});
+
 module.exports = {
     mongoose : mongoose
 }
