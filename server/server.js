@@ -9,11 +9,19 @@ const app = express();
 app.use(bodyParser.json());
 
 app.post('/api/todo', (req, res) => {
-    var model = new Todo({
+    const model = new Todo({
         text: req.body.text
     });
     model.save().then((doc) => {
         res.status(200).send(doc);
+    }, (err) => {
+        res.status(400).send(err.message);
+    });
+});
+
+app.get('/api/todos', (req, res) => {
+    Todo.find().then((models) => {
+        res.send({data: models});
     }, (err) => {
         res.status(400).send(err.message);
     });
