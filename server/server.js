@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
-require('./config/config');
+require('./config/config'); // set all configuations as config.js e.g port and node env
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
@@ -85,6 +85,26 @@ app.patch('/api/todos/:id', (req, res) => {
     });
 });
 
+// signup user using email and password
+
+app.post('/api/users/register', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']);
+    const user = new User({
+        email: body.email,
+        password: body.password
+    });
+    // const user = new User(body); // also valid
+    user.save()
+    .then((savedUser) => {
+        return savedUser.generateAuthToken(); // causes then to call with token as argument
+    }).then((token) => {
+        // we set token as custom header prop key in res
+        // x-auth is used to define custom header key instead of default header keys
+        res.header('x-auth', token).status(200).send(user);
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+});
 
 const port = process.env.PORT; // see config.js
 app.listen(port, 'localhost', () => {
