@@ -12,9 +12,10 @@ const {authenticate} = require('./middleware/authenticate');
 const app = express();
 app.use(bodyParser.json());
 
-app.post('/api/todo', (req, res) => {
+app.post('/api/todo', authenticate, (req, res) => {
     const model = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _createdBy: req.user._id
     });
     model.save().then((doc) => {
         res.status(200).send(doc);
@@ -23,15 +24,17 @@ app.post('/api/todo', (req, res) => {
     });
 });
 
-app.get('/api/todos', (req, res) => {
-    Todo.find().then((models) => {
+app.get('/api/todos', authenticate ,(req, res) => {
+    Todo.find({
+        _createdBy: req.user._id
+    }).then((models) => {
         res.send({data: models});
     }, (err) => {
         res.status(400).send(err);
     });
 });
 
-app.get('/api/todos/:id', (req, res) => {
+app.get('/api/todos/:id', authenticate ,(req, res) => {
     const id = req.params.id;
     if (!ObjectID.isValid(id)) return res.status(400).send('id is not valid!');
     Todo.findById(id).then((model) => {
@@ -42,7 +45,7 @@ app.get('/api/todos/:id', (req, res) => {
     });
 });
 
-app.delete('/api/todos/:id', (req, res) => {
+app.delete('/api/todos/:id', authenticate ,(req, res) => {
     const id = req.params.id;
     if (!ObjectID.isValid(id)) return res.status(400).send('id is not valid!');
     Todo.findByIdAndDelete(id).then((model) => {
@@ -59,7 +62,7 @@ app.delete('/api/todos/:id', (req, res) => {
 // if task is completed than we update completed time stamp and vice versa
 // we than use findbyidandupdate method and mongoose update operators 
 
-app.patch('/api/todos/:id', (req, res) => {
+app.patch('/api/todos/:id', authenticate ,(req, res) => {
     const id = req.params.id;
     if (!ObjectID.isValid(id)) return res.status(400).send('id is not valid!');
 
