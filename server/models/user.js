@@ -92,6 +92,23 @@ UserSchema.statics.findByToken = function(token) {
   }); // send back promise, call of function use then block 
 }
 
+UserSchema.statics.findByCredientials = function (email, password) {
+   let User = this; // upper case User means class level
+   return User.findOne({
+              'email': email
+          }).then((user) => {
+              return new Promise((resolve, reject) => {
+                  if (!user) {
+                    reject();
+                  } else if (bcrypt.compareSync(password, user.password) === false) {
+                    reject();
+                  } else {
+                    resolve(user);
+                  }
+              });
+    });
+}
+
 // add middleware to schemas
 // use of pre middleware, it called before a certain event takes place
 // events are 'init', 'validate', 'save' and 'remove' 
@@ -110,6 +127,8 @@ UserSchema.pre('save', function(next) {
     next(); // password is not modified so we do not change it
   }
 });
+
+
 
 const User = mongoose.model("User", UserSchema);
 

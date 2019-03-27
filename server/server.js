@@ -113,6 +113,19 @@ app.get('/api/users/me', authenticate, (req, res) => {
     return res.status(200).send(req.user); 
 });
 
+// login using post
+app.post('/api/users/login', (req, res) => {
+    const body = _.pick(req.body, ["email", "password"]);
+    User.findByCredientials(body.email, body.password).then((user) => {
+        // we have user, now we need to generate auth token
+        return user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).status(200).send(user);
+        });
+    }).catch((err) => {
+        res.status(404).send('User with specified email or password does not exists!');
+    });
+});
+
 const port = process.env.PORT; // see config.js
 app.listen(port, 'localhost', () => {
     console.log(`listening on port ${port}...`);
