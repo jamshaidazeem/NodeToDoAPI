@@ -48,7 +48,10 @@ app.get('/api/todos/:id', authenticate ,(req, res) => {
 app.delete('/api/todos/:id', authenticate ,(req, res) => {
     const id = req.params.id;
     if (!ObjectID.isValid(id)) return res.status(400).send('id is not valid!');
-    Todo.findByIdAndDelete(id).then((model) => {
+    Todo.findOneAndDelete({
+        _id: id,
+        _createdBy: req.user._id
+    }).then((model) => {
         if (!model) return res.status(404).send('no object found matching this id!');
         res.status(200).send({ data: model });
     }, (err) => {
@@ -77,7 +80,10 @@ app.patch('/api/todos/:id', authenticate ,(req, res) => {
        body = _.omit(body, ["completed"]); // in case completed is not valid we omit it
     } 
 
-    Todo.findByIdAndUpdate(id,{
+    Todo.findOneAndUpdate({
+        _id: id,
+        _createdBy: req.user._id
+    },{
         $set : body
     }, {
         new : true // send back updated object
