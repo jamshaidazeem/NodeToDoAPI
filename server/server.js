@@ -7,6 +7,7 @@ require('./config/config'); // set all configuations as config.js e.g port and n
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
+const {authenticate} = require('./middleware/authenticate');
 
 const app = express();
 app.use(bodyParser.json());
@@ -107,17 +108,9 @@ app.post('/api/users/register', (req, res) => {
 });
 
 // ger user by sending auth token in request header
-app.get('/api/users/me', (req, res) => {
-    // we use class method of User
-    const token = req.header('x-auth');
-    User.findByToken(token).then((user) => {
-        if (!user) {
-            return Promise.reject(); // causes below catch to called
-        }
-        return res.status(200).send(user);
-    }).catch((err) => {
-        res.status(401).send('Authentication Failed!');
-    })
+app.get('/api/users/me', authenticate, (req, res) => {
+    // because of authenticate middleware req contains user
+    return res.status(200).send(req.user); 
 });
 
 const port = process.env.PORT; // see config.js
