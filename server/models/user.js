@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 const kACCESS = "Auth";
 const kSECRET = "abc123";
@@ -90,6 +91,25 @@ UserSchema.statics.findByToken = function(token) {
     "tokens.token": token // whenever . appears in key we need to send as string
   }); // send back promise, call of function use then block 
 }
+
+// add middleware to schemas
+// use of pre middleware, it called before a certain event takes place
+// events are 'init', 'validate', 'save' and 'remove' 
+// before saving user document we check if password is modified than we hash it store
+UserSchema.pre('save', function(next) {
+  let user = this;
+  if (user.isModified('password') === true) {
+    const saltRounds = 10; // def 10 but upto any number but takes more time
+    bcrypt.genSalt(saltRounds).then((salt) => {
+      bcrypt.hash(user.password, salt).then((hash) => {
+        user.password = hash;
+        next();
+      });
+    });
+  } else {
+    next(); // password is not modified so we do not change it
+  }
+});
 
 const User = mongoose.model("User", UserSchema);
 
