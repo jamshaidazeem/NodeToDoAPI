@@ -3,6 +3,9 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
+const kACCESS = "Auth";
+const kSECRET = "abc123";
+
 const UserSchema = mongoose.Schema({
   email: {
     type: String,
@@ -41,15 +44,13 @@ UserSchema.methods.generateAuthToken = function() {
   // we use functions instead of arrow because this is available
   const user = this;
   const id = user._id.toHexString();
-  const access = "Auth";
   const data = {
     _id: id,
-    access: access
+    access: kACCESS
   };
-  const secret = 'abc123';
-  const token = jwt.sign(data, secret).toString();
+  const token = jwt.sign(data, kSECRET).toString();
   const tokenObj = {
-    access: access,
+    access: kACCESS,
     token: token
   };
   user.tokens.push(tokenObj);
@@ -66,9 +67,29 @@ UserSchema.methods.toJSON = function() {
   // because by default all values including password, tokens array also send in response
   // this method allows us to pick specific values for response
   const user = this;
-  const userObject = user.toObject(); // converts mongoose model into regular javacript obj
+  const userObject = user.toObject(); // converts mongoose model into regular javascript obj
   return _.pick(userObject, ['_id', 'email']); // token send via header
 };
+
+// we can define class methods using statics instead of methods 
+UserSchema.statics.findByToken = function(token) {
+  // we can use this method to find a user based on provided token
+  // if token is valid && available in some user's tokens array than we return user
+  // otherwise we send back reject promise
+  let User = this; // upper case User means class level
+  let decoded;
+  try { // if token is valid
+    decoded = jwt.verify(token, kSECRET); 
+  } catch (e) {
+    return Promise.reject(e); // caller of function use catch block
+  }
+  // token is valid:- now decoded contains a token object with _id and access props
+  return User.findOne({
+    _id: decoded._id,
+    "tokens.access": decoded.access, // whenever . appears in key we need to send as string
+    "tokens.token": token // whenever . appears in key we need to send as string
+  }); // send back promise, call of function use then block 
+}
 
 const User = mongoose.model("User", UserSchema);
 

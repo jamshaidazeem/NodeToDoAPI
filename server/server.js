@@ -106,6 +106,20 @@ app.post('/api/users/register', (req, res) => {
     });
 });
 
+// ger user by sending auth token in request header
+app.get('/api/users/me', (req, res) => {
+    // we use class method of User
+    const token = req.header('x-auth');
+    User.findByToken(token).then((user) => {
+        if (!user) {
+            return Promise.reject(); // causes below catch to called
+        }
+        return res.status(200).send(user);
+    }).catch((err) => {
+        res.status(401).send('Authentication Failed!');
+    })
+});
+
 const port = process.env.PORT; // see config.js
 app.listen(port, 'localhost', () => {
     console.log(`listening on port ${port}...`);
