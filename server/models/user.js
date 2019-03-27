@@ -72,6 +72,24 @@ UserSchema.methods.toJSON = function() {
   return _.pick(userObject, ['_id', 'email']); // token send via header
 };
 
+UserSchema.methods.logout = function (token) {
+  const user = this;
+  /*
+  const arrayAfterRemovingTokenInArgument = user.tokens.filter((tokenObj) => {
+    return tokenObj.token !== token;
+  });
+  user.tokens = arrayAfterRemovingTokenInArgument; 
+  return user.save();
+  */
+  return user.update({ 
+    $pull: { // pull operator update document 
+      tokens: { // from tokens array the object which token prop matches will be removed
+        token: token
+      }
+    }
+  });
+};
+
 // we can define class methods using statics instead of methods 
 UserSchema.statics.findByToken = function(token) {
   // we can use this method to find a user based on provided token

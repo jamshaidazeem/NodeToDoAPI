@@ -126,6 +126,19 @@ app.post('/api/users/login', (req, res) => {
     });
 });
 
+// logout using auth header
+app.post('/api/users/logout', authenticate ,(req, res) => {
+    // authenticate middleware sends user and token in req props
+    const user = req.user;
+    const token = req.token;
+    // now we need to delete this token from user's tokens array
+    user.logout(token).then((savedUser) => {
+        res.status(200).send('logout success!');
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+});
+
 const port = process.env.PORT; // see config.js
 app.listen(port, 'localhost', () => {
     console.log(`listening on port ${port}...`);
