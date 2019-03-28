@@ -4,9 +4,6 @@ const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const bcrypt = require('bcryptjs');
 
-const kACCESS = "Auth";
-const kSECRET = "abc123";
-
 const UserSchema = mongoose.Schema({
   email: {
     type: String,
@@ -47,11 +44,11 @@ UserSchema.methods.generateAuthToken = function() {
   const id = user._id.toHexString();
   const data = {
     _id: id,
-    access: kACCESS
+    access: process.env.ACCESS_TYPE
   };
-  const token = jwt.sign(data, kSECRET).toString();
+  const token = jwt.sign(data, process.env.JWT_SECRET).toString();
   const tokenObj = {
-    access: kACCESS,
+    access: process.env.ACCESS_TYPE,
     token: token
   };
   user.tokens.push(tokenObj);
@@ -98,7 +95,7 @@ UserSchema.statics.findByToken = function(token) {
   let User = this; // upper case User means class level
   let decoded;
   try { // if token is valid
-    decoded = jwt.verify(token, kSECRET); 
+    decoded = jwt.verify(token, process.env.JWT_SECRET); 
   } catch (e) {
     return Promise.reject(e); // caller of function use catch block
   }

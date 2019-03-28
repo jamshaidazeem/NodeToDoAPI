@@ -4,10 +4,7 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 // create a URL where our database lives to which we want to connect
-//const kMongoDBURL = "mongodb://localhost:27017/ToDoApp";
-//const kMongoDBURL = process.env.MONGODB_URI || "mongodb://localhost:27017/ToDoApp";
 const kMongoDBURL = process.env.MONGODB_URI; // see config.js
-
 const connectOptions = {
     useNewUrlParser: true,
 };

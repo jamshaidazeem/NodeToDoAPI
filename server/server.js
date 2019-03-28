@@ -1,9 +1,10 @@
+require('./config/config'); // sets all env configurations
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
-require('./config/config'); // set all configuations as config.js e.g port and node env
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
